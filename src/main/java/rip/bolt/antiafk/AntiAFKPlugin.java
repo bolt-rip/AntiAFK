@@ -16,10 +16,9 @@ public class AntiAFKPlugin extends JavaPlugin implements Listener {
 
     private Map<Player, Long> lastMoveTimes;
 
-    private static long AFK_DURATION = 5 * 60 * 1000;
-
     @Override
     public void onEnable() {
+        saveDefaultConfig();
         lastMoveTimes = new HashMap<Player, Long>();
 
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
@@ -27,9 +26,11 @@ public class AntiAFKPlugin extends JavaPlugin implements Listener {
             @Override
             public void run() {
                 long time = System.currentTimeMillis();
+                long afkDuration = getAFKDuration();
+
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     long lastTime = lastMoveTimes.get(player);
-                    if (lastTime + AFK_DURATION <= time)
+                    if (lastTime + afkDuration <= time)
                         player.kickPlayer("You have been idle for too long!");
                 }
             }
@@ -58,6 +59,10 @@ public class AntiAFKPlugin extends JavaPlugin implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent event) {
         lastMoveTimes.put(event.getPlayer(), System.currentTimeMillis());
+    }
+
+    public long getAFKDuration() {
+        return getConfig().getLong("time") * 1000 * 60;
     }
 
 }
